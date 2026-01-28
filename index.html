@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track, analyze, and manage your job applications efficiently with a modern, intuitive interface">
+    <title>Job Application Tracker - Manage Your Career Journey</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="branding">
+                    <h1 class="logo">📊 JobTracker</h1>
+                    <p class="tagline">Your Career Journey, Organized</p>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-icon" aria-label="Toggle dark mode" title="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button id="export-csv-btn" class="btn-secondary" aria-label="Export to CSV">
+                        📥 Export CSV
+                    </button>
+                    <button id="import-csv-btn" class="btn-secondary" aria-label="Import from CSV">
+                        📤 Import CSV
+                    </button>
+                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;" aria-label="CSV file input">
+                    <button id="add-job-btn" class="btn-primary" aria-label="Add new job application">
+                        ➕ Add Job
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Analytics Dashboard -->
+            <section class="analytics-section" id="analytics-section">
+                <h2 class="section-title">Analytics Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Applications</p>
+                            <p class="stat-value" id="total-applications">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Applied</p>
+                            <p class="stat-value" id="applied-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Interviews</p>
+                            <p class="stat-value" id="interview-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎉</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Offers</p>
+                            <p class="stat-value" id="offer-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Rejected</p>
+                            <p class="stat-value" id="rejected-count">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👻</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Ghosted</p>
+                            <p class="stat-value" id="ghosted-count">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Status Breakdown</h3>
+                        <div class="chart-container">
+                            <canvas id="status-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Application Trends (Last 30 Days)</h3>
+                        <div class="chart-container">
+                            <canvas id="trend-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search and Filters -->
+            <section class="filters-section">
+                <div class="filters-container">
+                    <div class="search-box">
+                        <input 
+                            type="text" 
+                            id="search-input" 
+                            class="search-input" 
+                            placeholder="🔍 Search by company or role..."
+                            aria-label="Search jobs"
+                        >
+                    </div>
+                    <div class="filters-group">
+                        <select id="status-filter" class="filter-select" aria-label="Filter by status">
+                            <option value="all">All Statuses</option>
+                            <option value="Applied">Applied</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Offer">Offer</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Ghosted">Ghosted</option>
+                        </select>
+                        <select id="job-type-filter" class="filter-select" aria-label="Filter by job type">
+                            <option value="all">All Job Types</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                        <select id="location-filter" class="filter-select" aria-label="Filter by location">
+                            <option value="all">All Locations</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Onsite">Onsite</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                        <select id="sort-select" class="filter-select" aria-label="Sort jobs">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Job Listings -->
+            <section class="jobs-section">
+                <div class="section-header">
+                    <h2 class="section-title">My Applications</h2>
+                    <p class="results-count" id="results-count">0 jobs</p>
+                </div>
+                <div id="jobs-container" class="jobs-grid">
+                    <!-- Job cards will be dynamically inserted here -->
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3 class="empty-state-title">No Job Applications Yet</h3>
+                    <p class="empty-state-text">Start tracking your job search journey by adding your first application!</p>
+                    <button class="btn-primary" onclick="document.getElementById('add-job-btn').click()">
+                        ➕ Add Your First Job
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Add/Edit Job Modal -->
+    <div id="job-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">Add New Job</h2>
+                <button id="close-modal-btn" class="btn-close" aria-label="Close modal">&times;</button>
+            </div>
+            <form id="job-form" class="job-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="company-name" class="form-label">Company Name *</label>
+                        <input 
+                            type="text" 
+                            id="company-name" 
+                            class="form-input" 
+                            required
+                            placeholder="e.g., Google"
+                            aria-required="true"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="role" class="form-label">Role / Position *</label>
+                        <input 
+                            type="text" 
+                            id="role" 
+                            class="form-input" 
+                            required
+                            placeholder="e.g., Software Engineer"
+                            aria-required="true"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="job-type" class="form-label">Job Type *</label>
+                        <select id="job-type" class="form-input" required aria-required="true">
+                            <option value="">Select type</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Contract">Contract</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location" class="form-label">Location *</label>
+                        <select id="location" class="form-input" required aria-required="true">
+                            <option value="">Select location</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Onsite">Onsite</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="application-date" class="form-label">Application Date *</label>
+                        <input 
+                            type="date" 
+                            id="application-date" 
+                            class="form-input" 
+                            required
+                            aria-required="true"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status *</label>
+                        <select id="status" class="form-input" required aria-required="true">
+                            <option value="">Select status</option>
+                            <option value="Applied">Applied</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Offer">Offer</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Ghosted">Ghosted</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="job-link" class="form-label">Job Link</label>
+                    <input 
+                        type="url" 
+                        id="job-link" 
+                        class="form-input" 
+                        placeholder="https://example.com/job-posting"
+                        aria-label="Job posting URL"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea 
+                        id="notes" 
+                        class="form-input form-textarea" 
+                        rows="4"
+                        placeholder="Add any additional notes about this application..."
+                        aria-label="Additional notes"
+                    ></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <span id="submit-btn-text">Add Job</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal" role="dialog" aria-labelledby="delete-modal-title" aria-modal="true">
+        <div class="modal-backdrop" id="delete-modal-backdrop"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2 id="delete-modal-title" class="modal-title">Confirm Delete</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this job application? You can undo this action within 5 seconds.</p>
+            </div>
+            <div class="form-actions">
+                <button id="cancel-delete-btn" class="btn-secondary">Cancel</button>
+                <button id="confirm-delete-btn" class="btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
+
+    <!-- Onboarding Tooltip -->
+    <div id="onboarding-tooltip" class="onboarding-tooltip">
+        <div class="tooltip-content">
+            <h3>👋 Welcome to JobTracker!</h3>
+            <p>Start by clicking the "Add Job" button to track your first application. You can search, filter, and analyze your job search journey.</p>
+            <button id="got-it-btn" class="btn-primary btn-small">Got it!</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
