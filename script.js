@@ -132,21 +132,39 @@
     // ===================================
 
     function loadJobs() {
+        console.log('📂 Loading jobs from localStorage...');
         const jobs = Storage.get(Storage.KEYS.JOBS);
         AppState.jobs = Array.isArray(jobs) ? jobs : [];
+        console.log('✅ Loaded jobs count:', AppState.jobs.length);
+        if (AppState.jobs.length > 0) {
+            console.log('📋 Jobs loaded:', AppState.jobs);
+        }
         applyFilters();
     }
 
     function saveJobs() {
-        return Storage.set(Storage.KEYS.JOBS, AppState.jobs);
+        console.log('💾 Saving jobs to localStorage, count:', AppState.jobs.length);
+        const result = Storage.set(Storage.KEYS.JOBS, AppState.jobs);
+        if (result) {
+            console.log('✅ Successfully saved to localStorage');
+        } else {
+            console.error('❌ Failed to save to localStorage');
+        }
+        return result;
     }
 
     function addJob(jobData) {
+        console.log('📝 Adding new job:', jobData);
         const job = createJob(jobData);
+        console.log('✅ Job created with ID:', job.id);
         AppState.jobs.unshift(job); // Add to beginning
+        console.log('📊 Current jobs in state:', AppState.jobs.length);
         if (saveJobs()) {
+            console.log('💾 Job saved to localStorage successfully');
             applyFilters();
             return job;
+        } else {
+            console.error('❌ Failed to save job to localStorage');
         }
         return null;
     }

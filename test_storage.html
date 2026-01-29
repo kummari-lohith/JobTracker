@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Test - JobTracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 0; }
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #4338ca; }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .info { color: #3b82f6; }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 JobTracker Storage Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Add a Job and Check Storage</h2>
+        <button onclick="testAddJob()">Add Test Job</button>
+        <button onclick="checkStorage()">Check LocalStorage</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Verify Data Persistence</h2>
+        <button onclick="testPersistence()">Test Persistence</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: View Stored Data</h2>
+        <button onclick="viewStoredData()">View All Jobs</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'jobtracker_jobs';
+
+        function testAddJob() {
+            const resultDiv = document.getElementById('test1-result');
+            
+            try {
+                // Create a test job
+                const testJob = {
+                    id: generateUUID(),
+                    company: 'Test Company',
+                    role: 'Software Engineer',
+                    jobType: 'Full-time',
+                    location: 'Remote',
+                    applicationDate: new Date().toISOString().split('T')[0],
+                    status: 'Applied',
+                    jobLink: 'https://example.com',
+                    notes: 'This is a test job application',
+                    createdAt: new Date().toISOString()
+                };
+
+                // Get existing jobs or initialize empty array
+                let jobs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                
+                // Add new job
+                jobs.unshift(testJob);
+                
+                // Save to localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Job added successfully!</p>
+                    <p class="info">Job ID: ${testJob.id}</p>
+                    <p class="info">Total jobs in storage: ${jobs.length}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function checkStorage() {
+            const resultDiv = document.getElementById('test1-result');
+            
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                
+                if (!stored) {
+                    resultDiv.innerHTML = `<p class="info">ℹ️ No data found in localStorage</p>`;
+                    return;
+                }
+
+                const jobs = JSON.parse(stored);
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Storage is working!</p>
+                    <p class="info">Number of jobs stored: ${jobs.length}</p>
+                    <pre>${JSON.stringify(jobs, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error reading storage: ${error.message}</p>`;
+            }
+        }
+
+        function clearStorage() {
+            const resultDiv = document.getElementById('test1-result');
+            localStorage.removeItem(STORAGE_KEY);
+            resultDiv.innerHTML = `<p class="success">✅ Storage cleared!</p>`;
+        }
+
+        function testPersistence() {
+            const resultDiv = document.getElementById('test2-result');
+            
+            try {
+                // Add a job
+                const testJob = {
+                    id: generateUUID(),
+                    company: 'Persistence Test Co.',
+                    role: 'Test Engineer',
+                    jobType: 'Contract',
+                    location: 'Hybrid',
+                    applicationDate: new Date().toISOString().split('T')[0],
+                    status: 'Interview',
+                    jobLink: '',
+                    notes: 'Testing data persistence',
+                    createdAt: new Date().toISOString()
+                };
+
+                let jobs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                jobs.unshift(testJob);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+
+                // Immediately read it back
+                const retrieved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                const found = retrieved.find(j => j.id === testJob.id);
+
+                if (found) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Data persistence verified!</p>
+                        <p class="info">Job was saved and retrieved successfully</p>
+                        <p class="info">Company: ${found.company}</p>
+                        <p class="info">Role: ${found.role}</p>
+                        <p class="info">Status: ${found.status}</p>
+                        <p class="info"><strong>Refresh this page (F5) to verify persistence across page loads</strong></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Job not found after saving!</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function viewStoredData() {
+            const resultDiv = document.getElementById('test3-result');
+            
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                
+                if (!stored) {
+                    resultDiv.innerHTML = `<p class="info">ℹ️ No jobs in storage. Add some jobs first!</p>`;
+                    return;
+                }
+
+                const jobs = JSON.parse(stored);
+                
+                let html = `<p class="success">✅ Found ${jobs.length} job(s) in storage:</p>`;
+                
+                jobs.forEach((job, index) => {
+                    html += `
+                        <div style="border: 1px solid #e5e7eb; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>${index + 1}. ${job.company} - ${job.role}</strong><br>
+                            Type: ${job.jobType} | Location: ${job.location}<br>
+                            Status: ${job.status} | Applied: ${job.applicationDate}<br>
+                            ${job.notes ? `Notes: ${job.notes}<br>` : ''}
+                            <small style="color: #6b7280;">ID: ${job.id}</small>
+                        </div>
+                    `;
+                });
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Auto-check storage on load
+        window.addEventListener('load', function() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const jobs = JSON.parse(stored);
+                console.log(`Found ${jobs.length} jobs in localStorage on page load`);
+            } else {
+                console.log('No jobs found in localStorage on page load');
+            }
+        });
+    </script>
+</body>
+</html>
